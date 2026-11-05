@@ -235,10 +235,7 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
           </figure>
           <p class="annotation">
             Both files should report <code>OK</code>. If either fails, stop and download the files
-            again from the same release. On Linux aarch64, rename
-            <code>rbitcoin-node-aarch64-linux</code> and <code>rbitcoin-cli-aarch64-linux</code>,
-            then check <code>SHA256SUMS.linux-musl-aarch64</code>. Those files start with the 0.9
-            release. Until then, the row above is hidden once the release list loads.
+            again from the same release.
           </p>
           <p>Make the binaries executable and check that the node starts:</p>
           <figure class="command-block">
@@ -344,10 +341,9 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
         <section id="container">
           <h2>Container image</h2>
           <p>
-            From 0.9, each release publishes <code>ghcr.io/rbitcoin-org/rbitcoin</code> for
-            linux/amd64 and linux/arm64. The image is the musl binaries with no shell. It runs as
-            user 10001, and the data directory is <code>/data/datadir</code>. The tag is the release
-            version without the leading <code>v</code>. The published 0.8 release is binaries only.
+            From 0.9, each release also publishes
+            <code>ghcr.io/rbitcoin-org/rbitcoin</code> for linux/amd64 and linux/arm64. The tag is
+            the version without a leading <code>v</code>. The 0.8 release has no image.
           </p>
           <figure class="command-block">
             <figcaption>
@@ -380,14 +376,8 @@ docker run -d --name rbitcoin --stop-timeout 300 \
             <p aria-live="polite" class="copy-status" role="status"></p>
           </figure>
           <p class="annotation">
-            Replace <code>X.Y.Z</code> with the release version, not the tag <code>vX.Y.Z</code>.
-            <code>--stop-timeout 300</code> gives the node time to flush on SIGTERM.
-            <code>--listen 0.0.0.0:8333</code> is what makes the published port accept peers. RPC
-            and wallet listeners stay off in this example.
-            <a
-              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/operator/setup.md#container-image"
-              >Container notes</a
-            >.
+            Replace <code>X.Y.Z</code> with the release version, not <code>vX.Y.Z</code>.
+            <code>--listen 0.0.0.0:8333</code> is what makes the published port accept peers.
           </p>
         </section>
         <section id="signet">
@@ -430,9 +420,7 @@ docker run -d --name rbitcoin --stop-timeout 300 \
           <p class="annotation">
             Signet checks every historical script by default.
             <code>--milestone 0</code> states that explicitly. Wallet interfaces stay off for this
-            first run. From 0.9, <code>--network testnet4</code> selects Bitcoin Core’s testnet4,
-            checks every script by default, and enforces BIP94. Its peer port is 48333 and its RPC
-            port is 48332.
+            first run. From 0.9, <code>--network testnet4</code> is Bitcoin Core’s testnet4.
           </p>
         </section>
         <section id="sync">
@@ -470,10 +458,9 @@ docker run -d --name rbitcoin --stop-timeout 300 \
           </p>
           <p>
             The mainnet default names block 840,000. Script and signature checks at or below that
-            height are skipped only when the header path contains the anchored block at that height
-            and this block at its own height. A fork that only shares the height does not skip those
-            checks. Other checks still run. Set <code>--milestone 0</code> before the first sync to
-            check every historical script. An explicit height skips by height alone.
+            height are skipped only when the header path contains the anchored block and chain work
+            meets the minimum. Other checks still run. Set <code>--milestone 0</code> before the
+            first sync to check every historical script. An explicit height skips by height alone.
             <a href="../security/index.html#milestone">About validation defaults</a>.
           </p>
         </section>

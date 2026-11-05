@@ -147,9 +147,8 @@
           <p>
             Mainnet defaults to <code>--milestone 840000</code>. Script and signature checks at or
             below height 840,000 are skipped only when the header path contains the anchored block
-            at that height and this block at its own height. A fork that only shares the height does
-            not skip those checks. Previous-output, double-spend, maturity, and fee checks still
-            run.
+            and chain work meets the minimum. A fork that only shares the height does not skip those
+            checks. Previous-output, double-spend, maturity, and fee checks still run.
           </p>
           <p>
             An explicit <code>--milestone HEIGHT</code> skips by height alone. Use
@@ -162,8 +161,7 @@
         <section id="operations">
           <h2>Operating the node</h2>
           <p>
-            Signet and regtest are a place to try a wallet. A consensus split on mainnet is
-            vanishingly unlikely.
+            Signet and regtest are a place to try a wallet.
           </p>
           <p>
             Watch chain agreement, reorgs, logs, and free disk space. Read the
