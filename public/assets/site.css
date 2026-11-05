@@ -831,12 +831,6 @@ body {
   width: 18%;
 }
 
-.chapter-rule {
-  margin: 45px 0 20px;
-  border: 0;
-  border-top: 1px solid var(--rule);
-}
-
 .chapter-next {
   display: flex;
   align-items: baseline;
