@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public"
 PAGE = PUBLIC / "esplora" / "index.html"
 SPEC_OUT = PUBLIC / "esplora" / "openapi.yaml"
-NODE_BLOB = "https://github.com/reardencode/rbitcoin/blob/master/"
+NODE_BLOB = "https://github.com/rbitcoin-org/rbitcoin/blob/master/"
 DEFAULT_SPEC = ROOT.parent / "rearden-bitcoin" / "docs" / "esplora-openapi.yaml"
 
 RELEASE_TAG = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d+)$")
@@ -498,7 +498,7 @@ def stamp_for(spec: Path) -> Stamp:
 def version_note(stamp: Stamp) -> str:
     if stamp.release and not stamp.dirty:
         return f"<p class=\"annotation\">Describes rbitcoin {esc(stamp.version)}.</p>"
-    href = f"https://github.com/reardencode/rbitcoin/commit/{stamp.commit}"
+    href = f"https://github.com/rbitcoin-org/rbitcoin/commit/{stamp.commit}"
     commit = f'<a href="{esc(href)}"><code>{esc(stamp.short)}</code></a>'
     extra = ", uncommitted changes" if stamp.dirty else ""
     return (
@@ -595,7 +595,7 @@ def page_html(spec: dict, stamp: Stamp) -> str:
         server_html = "<p>Spec server: " + "; ".join(server_bits) + ".</p>"
 
     blob = (
-        "https://github.com/reardencode/rbitcoin/blob/"
+        "https://github.com/rbitcoin-org/rbitcoin/blob/"
         f"{stamp.commit}/docs/esplora-openapi.yaml"
     )
     source_note = (
@@ -721,7 +721,7 @@ def page_html(spec: dict, stamp: Stamp) -> str:
       <span>By <a href="https://x.com/reardencode">reardencode</a></span>
       <nav aria-label="Project information">
         <a href="../about/index.html#donate">Donate</a
-        ><a class="source-link" href="https://github.com/reardencode/rbitcoin"
+        ><a class="source-link" href="https://github.com/rbitcoin-org/rbitcoin"
           ><span>Source</span
           ><svg
             aria-hidden="true"
