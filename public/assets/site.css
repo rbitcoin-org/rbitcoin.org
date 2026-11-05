@@ -831,6 +831,12 @@ body {
   width: 18%;
 }
 
+.chapter section.chapter-close {
+  margin-top: 45px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+
 .chapter-next {
   display: flex;
   align-items: baseline;

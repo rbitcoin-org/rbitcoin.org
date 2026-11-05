@@ -718,7 +718,7 @@ def page_html(spec: dict, stamp: Stamp) -> str:
       </main>
     </div>
     <footer class="site-colophon">
-      <span>By <a href="https://x.com/reardencode">reardencode</a></span>
+      <span>by rbitcoin contributors</span>
       <nav aria-label="Project information">
         <a href="../about/index.html#donate">Donate</a
         ><a class="source-link" href="https://github.com/rbitcoin-org/rbitcoin"
