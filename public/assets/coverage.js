@@ -8,7 +8,7 @@
   const list = root.querySelector("[data-coverage-crates]");
   if (!summary || !meta || !list) return;
 
-  const url = "https://raw.githubusercontent.com/reardencode/rbitcoin/badges/coverage.json";
+  const url = "https://raw.githubusercontent.com/rbitcoin-org/rbitcoin/badges/coverage.json";
 
   function grouped(value) {
     return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ",");

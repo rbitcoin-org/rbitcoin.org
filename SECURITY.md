@@ -2,7 +2,7 @@
 
 ## rbitcoin node
 
-The bitcoin full node is developed at [github.com/reardencode/rbitcoin](https://github.com/reardencode/rbitcoin). Report consensus, P2P, Electrum/Esplora integrity, store, or other **node** vulnerabilities **privately**:
+The bitcoin full node is developed at [github.com/rbitcoin-org/rbitcoin](https://github.com/rbitcoin-org/rbitcoin). Report consensus, P2P, Electrum/Esplora integrity, store, or other **node** vulnerabilities **privately**:
 
 **[security@reardencode.com](mailto:security@reardencode.com)**
 

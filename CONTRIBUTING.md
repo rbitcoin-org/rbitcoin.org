@@ -4,7 +4,7 @@ Thanks for interest in the rbitcoin.org site.
 
 ## Scope
 
-This repository is the **marketing site** only. Node code, issues, and operator docs live in [reardencode/rbitcoin](https://github.com/reardencode/rbitcoin).
+This repository is the **marketing site** only. Node code, issues, and operator docs live in [rbitcoin-org/rbitcoin](https://github.com/rbitcoin-org/rbitcoin).
 
 ## Principles
 

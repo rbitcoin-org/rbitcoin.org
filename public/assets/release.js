@@ -1,7 +1,7 @@
 /* Keep release labels, assets, documentation and the Nix command on one tag. */
 (() => {
-  const repository = "https://github.com/reardencode/rbitcoin";
-  const api = "https://api.github.com/repos/reardencode/rbitcoin/releases?per_page=100";
+  const repository = "https://github.com/rbitcoin-org/rbitcoin";
+  const api = "https://api.github.com/repos/rbitcoin-org/rbitcoin/releases?per_page=100";
 
   function highestStableRelease(releases) {
     if (!Array.isArray(releases)) return null;

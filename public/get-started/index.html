@@ -79,7 +79,7 @@
           <h2>Download rbitcoin</h2>
           <p>
             Download
-            <a data-release-link="" href="https://github.com/reardencode/rbitcoin/releases/latest"
+            <a data-release-link="" href="https://github.com/rbitcoin-org/rbitcoin/releases/latest"
               >the latest release</a
             >
             for your platform. Save the node, CLI, and checksum file in a new working directory.
@@ -93,19 +93,19 @@
                 <a
                   aria-label="Node for Linux x86_64"
                   data-release-asset="rbitcoin-node-x86_64-linux"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/rbitcoin-node-x86_64-linux"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-node-x86_64-linux"
                   >Node</a
                 >
                 <a
                   aria-label="CLI for Linux x86_64"
                   data-release-asset="rbitcoin-cli-x86_64-linux"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/rbitcoin-cli-x86_64-linux"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-cli-x86_64-linux"
                   >CLI</a
                 >
                 <a
                   aria-label="Checksums for Linux x86_64"
                   data-release-asset="SHA256SUMS.linux-musl"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/SHA256SUMS.linux-musl"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/SHA256SUMS.linux-musl"
                   >Checksums</a
                 >
               </div>
@@ -118,19 +118,19 @@
                 <a
                   aria-label="Node for Windows x86_64"
                   data-release-asset="rbitcoin-node-x86_64-windows.exe"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/rbitcoin-node-x86_64-windows.exe"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-node-x86_64-windows.exe"
                   >Node</a
                 >
                 <a
                   aria-label="CLI for Windows x86_64"
                   data-release-asset="rbitcoin-cli-x86_64-windows.exe"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/rbitcoin-cli-x86_64-windows.exe"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-cli-x86_64-windows.exe"
                   >CLI</a
                 >
                 <a
                   aria-label="Checksums for Windows x86_64"
                   data-release-asset="SHA256SUMS.windows"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/SHA256SUMS.windows"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/SHA256SUMS.windows"
                   >Checksums</a
                 >
               </div>
@@ -143,19 +143,19 @@
                 <a
                   aria-label="Node for macOS / Darwin — Apple Silicon"
                   data-release-asset="rbitcoin-node-aarch64-darwin"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/rbitcoin-node-aarch64-darwin"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-node-aarch64-darwin"
                   >Node</a
                 >
                 <a
                   aria-label="CLI for macOS / Darwin — Apple Silicon"
                   data-release-asset="rbitcoin-cli-aarch64-darwin"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/rbitcoin-cli-aarch64-darwin"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-cli-aarch64-darwin"
                   >CLI</a
                 >
                 <a
                   aria-label="Checksums for macOS / Darwin — Apple Silicon"
                   data-release-asset="SHA256SUMS.darwin"
-                  href="https://github.com/reardencode/rbitcoin/releases/latest/download/SHA256SUMS.darwin"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/SHA256SUMS.darwin"
                   >Checksums</a
                 >
               </div>
@@ -167,7 +167,7 @@
             <code>xattr -d com.apple.quarantine rbitcoin-node rbitcoin-cli</code>.
             <a
               data-release-doc="docs/operator/setup.md#build"
-              href="https://github.com/reardencode/rbitcoin/blob/master/docs/operator/setup.md#build"
+              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/operator/setup.md#build"
               >Windows and macOS setup notes</a
             >.
           </p>
@@ -249,7 +249,7 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
             <strong>Already running rbitcoin?</strong> Read the
             <a
               data-release-doc="CHANGELOG.md"
-              href="https://github.com/reardencode/rbitcoin/blob/master/CHANGELOG.md"
+              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/CHANGELOG.md"
               >upgrade notes</a
             >
             before opening an existing data directory. A 0.7 directory opens in place. A directory
@@ -264,7 +264,7 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
             </p>
             <p class="annotation" data-release-fallback="">
               Replace RELEASE_TAG with the tag shown on the
-              <a href="https://github.com/reardencode/rbitcoin/releases/latest">release page</a>.
+              <a href="https://github.com/rbitcoin-org/rbitcoin/releases/latest">release page</a>.
             </p>
             <figure class="command-block">
               <figcaption>
@@ -293,7 +293,7 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
                 aria-labelledby="nix-build-label"
                 tabindex="0"
               ><code>git clone --branch <span data-release-tag="">RELEASE_TAG</span> --depth 1 \
-  https://github.com/reardencode/rbitcoin.git
+  https://github.com/rbitcoin-org/rbitcoin.git
 cd rbitcoin
 nix build .#rbitcoin-musl
 cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
@@ -306,7 +306,7 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
               inside a Nix shell may depend on Nix’s libraries.
               <a
                 data-release-doc="docs/reproducible-builds.md"
-                href="https://github.com/reardencode/rbitcoin/blob/master/docs/reproducible-builds.md"
+                href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/reproducible-builds.md"
                 >Reproducible build guide</a
               >.
             </p>
@@ -363,7 +363,7 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
             no progress, check the
             <a
               data-release-doc="docs/operator/operations.md#logging"
-              href="https://github.com/reardencode/rbitcoin/blob/master/docs/operator/operations.md#logging"
+              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/operator/operations.md#logging"
               >operator guide</a
             >.
           </p>
@@ -387,7 +387,7 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
             mainnet data directory and follow the
             <a
               data-release-doc="docs/experimental-mainnet.md"
-              href="https://github.com/reardencode/rbitcoin/blob/master/docs/experimental-mainnet.md"
+              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/experimental-mainnet.md"
               >mainnet runbook</a
             >.
           </p>
@@ -409,7 +409,7 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
       <span>By <a href="https://x.com/reardencode">reardencode</a></span>
       <nav aria-label="Project information">
         <a href="../about/index.html#donate">Donate</a
-        ><a class="source-link" href="https://github.com/reardencode/rbitcoin"
+        ><a class="source-link" href="https://github.com/rbitcoin-org/rbitcoin"
           ><span>Source</span
           ><svg
             aria-hidden="true"
