@@ -68,8 +68,9 @@
           <h1>Security and validation.</h1>
           <p class="chapter-intro">
             rbitcoin uses independent consensus code. Functional tests, consensus rule tests, and
-            differential fuzzing check its agreement with Bitcoin Core. It is still pre-1.0, and
-            upgrades can change storage formats or APIs.
+            differential fuzzing check its agreement with Bitcoin Core. A consensus split on mainnet
+            is vanishingly unlikely. Further hardening and signed release binaries are planned for
+            1.0. Until then, upgrades can still change storage formats or APIs.
           </p>
         </header>
         <nav aria-label="On this page" class="chapter-contents">
@@ -160,17 +161,17 @@
         <section id="operations">
           <h2>Operating the node</h2>
           <p>
-            Signet and regtest provide a place to try the node before connecting a wallet. Mainnet
-            operators may want another node in view until they are satisfied with chain agreement.
+            Signet and regtest are a place to try a wallet. A consensus split on mainnet is
+            vanishingly unlikely.
           </p>
           <p>
             Watch chain agreement, reorgs, logs, and free disk space. Read the
             <a href="https://github.com/rbitcoin-org/rbitcoin/blob/master/CHANGELOG.md"
               >release notes</a
             >
-            before upgrading. A 0.7 data directory opens in place. A directory from 0.6 or earlier
-            is refused and needs a fresh sync. Do not point an older binary at a directory this
-            release has opened.
+            before upgrading. A 0.7 or 0.8 data directory opens in place. A directory from 0.6 or
+            earlier is refused and needs a fresh sync. Do not point an older binary at a directory
+            this release has opened.
           </p>
           <p>
             Keep wallet and RPC listeners local unless you have configured

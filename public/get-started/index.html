@@ -5,7 +5,7 @@
     <meta content="width=device-width,initial-scale=1" name="viewport" />
     <title>Get started — rbitcoin</title>
     <meta
-      content="Choose a Linux binary, try signet, and plan a mainnet archive."
+      content="Download a Linux binary or run the container image, and keep a mainnet archive."
       name="description"
     />
     <meta content="#ffffff" name="theme-color" />
@@ -20,7 +20,7 @@
     <meta content="rbitcoin" property="og:site_name" />
     <meta content="Get started — rbitcoin" property="og:title" />
     <meta
-      content="Choose a Linux binary, try signet, and plan a mainnet archive."
+      content="Download a Linux binary or run the container image, and keep a mainnet archive."
       property="og:description"
     />
     <meta content="https://rbitcoin.org/get-started/" property="og:url" />
@@ -67,13 +67,14 @@
           <p class="chapter-kicker">01 / Get started</p>
           <h1>Run rbitcoin.</h1>
           <p class="chapter-intro">
-            Download rbitcoin for Linux and try it on Bitcoin’s test network. Check that it connects
-            and starts syncing before moving to mainnet.
+            Download rbitcoin for Linux, or run the container image from 0.9. A short signet run
+            checks that the binary connects and starts syncing. Mainnet is safe to run.
           </p>
         </header>
         <nav aria-label="On this page" class="chapter-contents">
-          <a href="#download">Download</a><a href="#signet">Try signet</a
-          ><a href="#sync">Keep syncing</a><a href="#mainnet">Before mainnet</a>
+          <a href="#download">Download</a><a href="#container">Container</a
+          ><a href="#signet">Try signet</a><a href="#sync">Keep syncing</a
+          ><a href="#mainnet">Mainnet</a>
         </nav>
         <section id="download">
           <h2>Download rbitcoin</h2>
@@ -106,6 +107,31 @@
                   aria-label="Checksums for Linux x86_64"
                   data-release-asset="SHA256SUMS.linux-musl"
                   href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/SHA256SUMS.linux-musl"
+                  >Checksums</a
+                >
+              </div>
+            </li>
+            <li data-release-platform="rbitcoin-node-aarch64-linux">
+              <div class="download-platform">
+                <span>Linux</span><span class="download-arch">aarch64</span>
+              </div>
+              <div class="download-links">
+                <a
+                  aria-label="Node for Linux aarch64"
+                  data-release-asset="rbitcoin-node-aarch64-linux"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-node-aarch64-linux"
+                  >Node</a
+                >
+                <a
+                  aria-label="CLI for Linux aarch64"
+                  data-release-asset="rbitcoin-cli-aarch64-linux"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/rbitcoin-cli-aarch64-linux"
+                  >CLI</a
+                >
+                <a
+                  aria-label="Checksums for Linux aarch64"
+                  data-release-asset="SHA256SUMS.linux-musl-aarch64"
+                  href="https://github.com/rbitcoin-org/rbitcoin/releases/latest/download/SHA256SUMS.linux-musl-aarch64"
                   >Checksums</a
                 >
               </div>
@@ -209,7 +235,10 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
           </figure>
           <p class="annotation">
             Both files should report <code>OK</code>. If either fails, stop and download the files
-            again from the same release.
+            again from the same release. On Linux aarch64, rename
+            <code>rbitcoin-node-aarch64-linux</code> and <code>rbitcoin-cli-aarch64-linux</code>,
+            then check <code>SHA256SUMS.linux-musl-aarch64</code>. Those files start with the 0.9
+            release. Until then, the row above is hidden once the release list loads.
           </p>
           <p>Make the binaries executable and check that the node starts:</p>
           <figure class="command-block">
@@ -252,9 +281,9 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
               href="https://github.com/rbitcoin-org/rbitcoin/blob/master/CHANGELOG.md"
               >upgrade notes</a
             >
-            before opening an existing data directory. A 0.7 directory opens in place. A directory
-            from 0.6 or earlier is refused and needs a fresh sync. Do not point an older binary at a
-            directory this release has opened.
+            before opening an existing data directory. A 0.7 or 0.8 directory opens in place. A
+            directory from 0.6 or earlier is refused and needs a fresh sync. Do not point an older
+            binary at a directory this release has opened.
           </p>
           <details class="build-option" id="build">
             <summary>Build with Nix instead</summary>
@@ -312,6 +341,55 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
             </p>
           </details>
         </section>
+        <section id="container">
+          <h2>Container image</h2>
+          <p>
+            From 0.9, each release publishes <code>ghcr.io/rbitcoin-org/rbitcoin</code> for
+            linux/amd64 and linux/arm64. The image is the musl binaries with no shell. It runs as
+            user 10001, and the data directory is <code>/data/datadir</code>. The tag is the release
+            version without the leading <code>v</code>. The published 0.8 release is binaries only.
+          </p>
+          <figure class="command-block">
+            <figcaption>
+              <span id="container-label">Run the container</span
+              ><button
+                aria-label="Copy run the container command"
+                class="copy-command"
+                hidden=""
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  viewBox="0 0 16 16"
+                  width="14"
+                >
+                  <rect height="8" rx="1" width="8" x="5.5" y="5.5"></rect>
+                  <path d="M10.5 3V2.5h-8v8H3"></path></svg
+                ><span>Copy</span>
+              </button>
+            </figcaption>
+            <pre aria-labelledby="container-label" tabindex="0"><code>docker volume create rbitcoin
+docker run -d --name rbitcoin --stop-timeout 300 \
+  -v rbitcoin:/data -p 8333:8333 \
+  ghcr.io/rbitcoin-org/rbitcoin:X.Y.Z \
+  --listen 0.0.0.0:8333</code></pre>
+            <p aria-live="polite" class="copy-status" role="status"></p>
+          </figure>
+          <p class="annotation">
+            Replace <code>X.Y.Z</code> with the release version, not the tag <code>vX.Y.Z</code>.
+            <code>--stop-timeout 300</code> gives the node time to flush on SIGTERM.
+            <code>--listen 0.0.0.0:8333</code> is what makes the published port accept peers. RPC
+            and wallet listeners stay off in this example.
+            <a
+              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/operator/setup.md#container-image"
+              >Container notes</a
+            >.
+          </p>
+        </section>
         <section id="signet">
           <h2>Try signet</h2>
           <p>
@@ -352,7 +430,9 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
           <p class="annotation">
             Signet checks every historical script by default.
             <code>--milestone 0</code> states that explicitly. Wallet interfaces stay off for this
-            first run.
+            first run. From 0.9, <code>--network testnet4</code> selects Bitcoin Core’s testnet4,
+            checks every script by default, and enforces BIP94. Its peer port is 48333 and its RPC
+            port is 48332.
           </p>
         </section>
         <section id="sync">
@@ -373,7 +453,7 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
           </p>
         </section>
         <section id="mainnet">
-          <h2>Before mainnet</h2>
+          <h2>Mainnet</h2>
           <p id="requirements">
             Plan for a 1 TB-class disk, with room for growth. The default keeps a full archive.
             Older witness data can be dropped with a witness window; silent payments need the full
@@ -381,14 +461,13 @@ cp result/bin/rbitcoin-node result/bin/rbitcoin-cli .
             <a href="../architecture/index.html#storage">Storage requirements</a>.
           </p>
           <p>
-            rbitcoin is an independent consensus implementation and is still pre-1.0. A short signet
-            run is only a first check. Operators may want another node in view until they are
-            satisfied with chain agreement. Monitor reorgs and free disk space. Use a separate
-            mainnet data directory and follow the
+            A consensus split on mainnet is vanishingly unlikely. The most cautious can wait for 1.0
+            for further hardening and signed release binaries. Monitor reorgs and free disk space.
+            Use a separate mainnet data directory. See the
             <a
               data-release-doc="docs/experimental-mainnet.md"
               href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/experimental-mainnet.md"
-              >mainnet runbook</a
+              >mainnet notes</a
             >.
           </p>
           <p>

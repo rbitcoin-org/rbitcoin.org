@@ -1,6 +1,6 @@
 # rbitcoin.org
 
-Website for **[rbitcoin](https://github.com/rbitcoin-org/rbitcoin)** — a Bitcoin full node in Rust with a compact archive and wallet serving in the same process.
+Website for **[rbitcoin](https://github.com/rbitcoin-org/rbitcoin)** — a Bitcoin full node in Rust with a compact archive and wallet serving in the same process. Production Ready, unincorporated.
 
 Static pages cover the node, setup, architecture, wallet backends, the Esplora HTTP API, security, and the project. The site follows the system theme until a visitor chooses light or dark mode. Small local scripts add copy controls, release information, the archive comparison, and the security-page coverage summary. Content and navigation work without JavaScript. The coverage numbers appear when that script can read the latest green master measurement.
 
