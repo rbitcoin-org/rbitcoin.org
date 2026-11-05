@@ -464,17 +464,16 @@ docker run -d --name rbitcoin --stop-timeout 300 \
             A consensus split on mainnet is vanishingly unlikely. The most cautious can wait for 1.0
             for further hardening and signed release binaries. Monitor reorgs and free disk space.
             Use a separate mainnet data directory. See the
-            <a
-              data-release-doc="docs/experimental-mainnet.md"
-              href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/experimental-mainnet.md"
+            <a href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/operator/mainnet.md"
               >mainnet notes</a
             >.
           </p>
           <p>
             The mainnet default names block 840,000. Script and signature checks at or below that
-            height are skipped only when the header path contains the anchored block and chain work
-            meets the minimum. Other checks still run. Set <code>--milestone 0</code> before the
-            first sync to check every historical script. An explicit height skips by height alone.
+            height are skipped only when the header path contains the anchored block at that height
+            and this block at its own height. A fork that only shares the height does not skip those
+            checks. Other checks still run. Set <code>--milestone 0</code> before the first sync to
+            check every historical script. An explicit height skips by height alone.
             <a href="../security/index.html#milestone">About validation defaults</a>.
           </p>
         </section>
