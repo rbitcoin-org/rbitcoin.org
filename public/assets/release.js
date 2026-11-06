@@ -34,6 +34,11 @@
         ? `${repository}/releases/download/${tag}/${encodeURIComponent(asset)}`
         : releaseUrl;
     });
+    // A platform row names the asset that must exist. Hide it when this release
+    // does not ship that file (Linux aarch64 starts with 0.9; v0.8.0 does not).
+    document.querySelectorAll("[data-release-platform]").forEach((row) => {
+      row.hidden = !assets.has(row.dataset.releasePlatform);
+    });
     document.querySelectorAll("[data-release-doc]").forEach((link) => {
       link.href = `${repository}/blob/${tag}/${link.dataset.releaseDoc}`;
     });
