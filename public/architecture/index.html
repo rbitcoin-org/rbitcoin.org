@@ -173,8 +173,9 @@
           </dl>
           <p>
             The transaction index is built during sync and is part of the node’s storage model.
-            Wallet indexes are optional. The same process validates blocks and serves wallets,
-            without a separate Electrum indexer.
+            Wallet indexes are optional. The address-history index can still be catching up after
+            the chain tip is stored. The same process validates blocks and serves wallets, without a
+            separate Electrum indexer.
           </p>
           <p>The store uses ordinary files; you do not need to install a database server.</p>
         </section>
@@ -213,8 +214,10 @@
           </p>
           <p>
             The default keeps the full witness history.
-            <code>--prune-seqsigwit</code> keeps a recent window of 288 blocks instead. Silent
-            payments require the full witness, so that window cannot be combined with them.
+            <code>--prune-seqsigwit</code> keeps script and witness data for the last 288 blocks and
+            drops the older witness history. That is not Bitcoin Core’s block-file prune.
+            Silent-payment tweaks can use that window when their index covers every height the cut
+            will drop. A scan that cannot read a height returns an error.
           </p>
           <p>
             There is no separate coins cache to size and flush. The operating system’s page cache

@@ -145,10 +145,11 @@
         <section id="milestone">
           <h2>Historical script checks</h2>
           <p>
-            Mainnet defaults to <code>--milestone 840000</code>. Script and signature checks at or
-            below height 840,000 are skipped only when the header path contains the anchored block
-            and chain work meets the minimum. A fork that only shares the height does not skip those
-            checks. Previous-output, double-spend, maturity, and fee checks still run.
+            Mainnet defaults to <code>--milestone 966143</code>. Script and signature checks at or
+            below that height are skipped only when the header path contains the anchored block at
+            its height and the block being checked at its own height. Stored minimum chain work is
+            not that gate. A fork that only shares the height does not skip those checks.
+            Previous-output, double-spend, maturity, and fee checks still run.
           </p>
           <p>
             An explicit <code>--milestone HEIGHT</code> skips by height alone. Use
@@ -168,7 +169,8 @@
             <a href="https://github.com/rbitcoin-org/rbitcoin/blob/master/CHANGELOG.md"
               >release notes</a
             >
-            before upgrading. A 0.7 or 0.8 data directory opens in place. A directory from 0.6 or
+            before upgrading. Opening a data directory from 0.7, 0.8, or 0.9.0 updates its format in
+            place. A 0.9.0 binary will not open that directory afterward. A directory from 0.6 or
             earlier is refused and needs a fresh sync. Do not point an older binary at a directory
             this release has opened.
           </p>

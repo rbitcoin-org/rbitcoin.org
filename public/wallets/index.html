@@ -84,7 +84,8 @@
               <dt>Electrum</dt>
               <dd>
                 Confirmed and unconfirmed history, transaction broadcast, fee information, silent
-                payment tweaks, and Electrum 1.6 package broadcast.
+                payment tweaks, and Electrum 1.6 package broadcast. A one-block fee quote follows
+                the two-block price until the mempool is busy.
               </dd>
             </div>
             <div>
@@ -177,8 +178,10 @@
           <h2>Silent payments</h2>
           <p>
             rbitcoin serves silent payment tweaks over Electrum and supports Frigate scan-key
-            subscriptions. Your wallet must support the matching protocol; ordinary Electrum support
-            is not enough. See the
+            subscriptions. Those tweaks can run beside the 288-block witness window when the index
+            covers every height that window will drop. A scan that cannot read a height returns an
+            error. Your wallet must support the matching protocol; ordinary Electrum support is not
+            enough. See the
             <a
               data-release-doc="COMPAT.md#tweaks-stream-vs-sparrow--frigate"
               href="https://github.com/rbitcoin-org/rbitcoin/blob/master/COMPAT.md#tweaks-stream-vs-sparrow--frigate"
@@ -196,7 +199,9 @@
             setting.
           </p>
           <p>
-            There is no wallet RPC surface or coins-database UTXO scan. A matching method name is
+            There is no wallet RPC surface or coins-database UTXO scan.
+            <code>estimatesmartfee</code> target 1 follows the two-block price until the mempool is
+            busy. Esplora’s one-block key stays on the one-block quote. A matching method name is
             not a guarantee that every existing Core integration will work unchanged. Read the
             <a
               data-release-doc="docs/rpc.md"
@@ -210,7 +215,9 @@
           <p>
             Keep application listeners on loopback for local use. For a wallet on another device,
             use a secure tunnel or configure a TLS proxy and access controls. The node itself serves
-            plain TCP or HTTP.
+            plain TCP or HTTP. Electrum and Esplora are not published over Tor or I2P unless you
+            turn that publication on. A node that published them from Tor control or I2P incoming
+            alone stops doing so until the matching switch is set. Saved service keys are kept.
           </p>
           <p>
             See the
