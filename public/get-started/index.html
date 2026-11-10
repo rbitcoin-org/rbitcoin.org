@@ -278,7 +278,8 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
               href="https://github.com/rbitcoin-org/rbitcoin/blob/master/CHANGELOG.md"
               >upgrade notes</a
             >
-            before opening an existing data directory. A 0.7 or 0.8 directory opens in place. A
+            before opening an existing data directory. Opening a directory from 0.7, 0.8, or 0.9.0
+            updates its format in place. A 0.9.0 binary will not open that directory afterward. A
             directory from 0.6 or earlier is refused and needs a fresh sync. Do not point an older
             binary at a directory this release has opened.
           </p>
@@ -286,7 +287,13 @@ sha256sum --check SHA256SUMS.linux-musl</code></pre>
             <summary>Build with Nix instead</summary>
             <p>
               With Git and Nix installed on Linux x86_64, build the release from its pinned source
-              and lockfile. This is the reproducible Linux build path.
+              and lockfile. This is the reproducible Linux build path. The same flake exports a NixOS
+              <code>services.rbitcoin</code> module for the operator flags.
+              <a
+                data-release-doc="docs/operator/setup.md#nixos-service"
+                href="https://github.com/rbitcoin-org/rbitcoin/blob/master/docs/operator/setup.md#nixos-service"
+                >NixOS service</a
+              >.
             </p>
             <p class="annotation" data-release-fallback="">
               Replace RELEASE_TAG with the tag shown on the
@@ -444,8 +451,9 @@ docker run -d --name rbitcoin --stop-timeout 300 \
           <h2>Mainnet</h2>
           <p id="requirements">
             Plan for a 1 TB-class disk, with room for growth. The default keeps a full archive.
-            Older witness data can be dropped with a witness window; silent payments need the full
-            witness.
+            <code>--prune-seqsigwit</code> keeps script and witness data for the last 288 blocks.
+            That is not Bitcoin Core’s block-file prune. Silent payments can use that window when
+            their index covers the heights the cut drops.
             <a href="../architecture/index.html#storage">Storage requirements</a>.
           </p>
           <p>
@@ -457,10 +465,11 @@ docker run -d --name rbitcoin --stop-timeout 300 \
             >.
           </p>
           <p>
-            The mainnet default names block 840,000. Script and signature checks at or below that
-            height are skipped only when the header path contains the anchored block and chain work
-            meets the minimum. Other checks still run. Set <code>--milestone 0</code> before the
-            first sync to check every historical script. An explicit height skips by height alone.
+            The mainnet default names block 966,143. Script and signature checks at or below that
+            height are skipped only when the header path contains the anchored block at its height
+            and the block being checked at its own height. Stored minimum chain work is not that
+            gate. Other checks still run. Set <code>--milestone 0</code> before the first sync to
+            check every historical script. An explicit height skips by height alone.
             <a href="../security/index.html#milestone">About validation defaults</a>.
           </p>
         </section>
