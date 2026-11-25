@@ -70,9 +70,9 @@
             <code>?asof=</code> dialect.
           </p>
           <p class="annotation">
-            Describes rbitcoin 0.8.99 (<a
-              href="https://github.com/rbitcoin-org/rbitcoin/commit/9eabc083eab65c8fb0c651f5fad4a5195b9aa5fc"
-              ><code>9eabc083e</code></a
+            Describes rbitcoin 0.9.99 (<a
+              href="https://github.com/rbitcoin-org/rbitcoin/commit/be1a7a8892f2d86dca370713aa5dd8868c2b316d"
+              ><code>be1a7a889</code></a
             >).
           </p>
         </header>
@@ -85,19 +85,20 @@
               <div class="api-contents-links">
                 <div class="api-contents-group">
                   <p>Overview</p>
-                  <a href="#hashes">Hashes</a><a href="#chain-view-headers">Chain-view headers</a
+                  <a href="#hashes">Hashes</a><a href="#stored-block-reads">Stored block reads</a
+                  ><a href="#chain-view-headers">Chain-view headers</a
                   ><a href="#x-powered-by">X-Powered-By</a
                   ><a href="#as-of-asof-blockhash">As-of queries</a
                   ><a href="#scripthash-index">Scripthash index</a><a href="#errors">Errors</a>
                 </div>
                 <div class="api-contents-group">
                   <p>Routes</p>
-                  <a href="#tag-blocks">Blocks<span aria-label="14 routes">14</span></a
-                  ><a href="#tag-transactions">Transactions<span aria-label="9 routes">9</span></a
+                  <a href="#tag-blocks">Blocks<span aria-label="15 routes">15</span></a
+                  ><a href="#tag-transactions">Transactions<span aria-label="13 routes">13</span></a
                   ><a href="#tag-addresses">Addresses<span aria-label="20 routes">20</span></a
-                  ><a href="#tag-mempool">Mempool<span aria-label="6 routes">6</span></a
+                  ><a href="#tag-mempool">Mempool<span aria-label="7 routes">7</span></a
                   ><a href="#tag-broadcast">Broadcast<span aria-label="3 routes">3</span></a
-                  ><a href="#tag-internal">Internal<span aria-label="8 routes">8</span></a>
+                  ><a href="#tag-internal">Internal<span aria-label="12 routes">12</span></a>
                 </div>
                 <div class="api-contents-group">
                   <a href="#schemas">Schemas</a
@@ -119,30 +120,40 @@
             <h2 id="hashes">Hashes</h2>
             <p>
               Every txid and block hash is 64 hex characters in display order (the order Core and
-              Esplora print). <code>a-f</code> and <code>A-F</code> are both accepted, as is an
-              optional <code>0x</code> or <code>0X</code> prefix. A malformed hash in a path or in
+              Esplora print). A scripthash is SHA256(scriptPubKey) in digest order, not reversed.
+              <code>a-f</code> and <code>A-F</code> are both accepted, as is an optional
+              <code>0x</code> or <code>0X</code> prefix. A malformed hash in a path or in
               <code>?asof=</code> returns <strong>404</strong> <code>Not Found</code>.
+            </p>
+            <h2 id="stored-block-reads">Stored block reads</h2>
+            <p>
+              Hash-addressed block routes admit active blocks and blocks disconnected during the
+              current process. Header-only and never-connected bodies are 404. Restart forgets
+              disconnected membership: reopened stale blocks are 404 until reconnected and
+              disconnected again. This does not relax <code>?asof=</code>.
             </p>
             <h2 id="chain-view-headers">Chain-view headers</h2>
             <p>
               Pinned responses carry <code>X-Bitcoin-Chain-Tip</code> (block hash) and
               <code>X-Bitcoin-Chain-Tip-Height</code>. Both are CORS-exposed. Block, tx, and header
               routes stamp the live tip. <code>/address/*</code>, <code>/scripthash/*</code>,
-              <code>/addresses/*</code>, and <code>/scripthashes/*</code> stamp the scripthash-index
-              watermark, so the JSON matches the join that produced it, except
-              <code>/address/{address}/txs/mempool</code> and
+              <code>/addresses/*</code>, <code>/scripthashes/*</code>,
+              <code>/internal/address/*</code>, and <code>/internal/scripthash/*</code> (with their
+              <code>/history</code>) stamp the scripthash-index watermark, so the JSON matches the
+              join that produced it, except <code>/address/{address}/txs/mempool</code> and
               <code>/scripthash/{scripthash}/txs/mempool</code>, which are not stamped. With
               <code>?asof=</code>, the stamp is the as-of block. Public <code>/mempool</code>,
-              <code>/mempool/txids</code>, and <code>/mempool/recent</code> are not stamped.
-              <code>/mempool/txids/page</code> and <code>/mempool/txids/page/{last_txid}</code> are,
-              because the unstamped check is only <code>/mempool</code> and
-              <code>/mempool/{one segment}</code>. <code>/fee-estimates</code>,
-              <code>POST /tx</code>, and <code>POST /txs/package</code> are not stamped.
-              <code>/internal/mempool/*</code> is stamped. If two sequential fetches disagree on the
-              hash, drop the batch and restart. If the pin leaves the best chain mid-request, the
-              response is <strong>503</strong> <code>chain view moved</code>. A handler error on a
-              route that already took a pin still carries the chain-tip headers. A bad
-              <code>?asof=</code> is rejected before that pin and does not.
+              <code>/mempool/txids</code>, <code>/mempool/recent</code>, and
+              <code>/mempool/removed</code> are not stamped. <code>/mempool/txids/page</code> and
+              <code>/mempool/txids/page/{last_txid}</code> are, because the unstamped check is only
+              <code>/mempool</code> and <code>/mempool/{one segment}</code>.
+              <code>/fee-estimates</code>, <code>POST /tx</code>, and
+              <code>POST /txs/package</code> are not stamped. <code>/internal/mempool/*</code> is
+              stamped. If two sequential fetches disagree on the hash, drop the batch and restart.
+              If the pin leaves the best chain mid-request, the response is <strong>503</strong>
+              <code>chain view moved</code>. A handler error on a route that already took a pin
+              still carries the chain-tip headers. A bad <code>?asof=</code> is rejected before that
+              pin and does not.
             </p>
             <h2 id="x-powered-by">X-Powered-By</h2>
             <p>
@@ -164,7 +175,11 @@
                 <code>/tx/{txid}/status</code>, <code>/tx/{txid}/outspend/{vout}</code>,
                 <code>/tx/{txid}/outspends</code>, and address/scripthash <code>/</code>,
                 <code>/utxo</code>, <code>/txs</code>, <code>/txs/chain[/{last}]</code>,
-                <code>/txs/summary[/{last}]</code>.
+                <code>/txs/summary[/{last}]</code>, the output-by-position routes
+                (<code>/block-height/{height}/tx/{index}[/out/{vout}]</code>,
+                <code>/tx/{txid}/out/{vout}</code>, <code>POST /block-heights/txs/outs</code>), plus
+                the unix-socket <code>/internal/address/{address}</code> and
+                <code>/internal/scripthash/{scripthash}</code> and their <code>/history</code>.
               </li>
               <li>
                 On any other route, <code>?asof=</code> is <strong>404</strong> (for example
@@ -183,15 +198,19 @@
               </li>
             </ul>
             <p>
-              The Electrum counterpart is a trailing <code>asof:&lt;blockhash&gt;</code> argument, on
-              any negotiated protocol; see COMPAT.md.
+              The Electrum counterpart is a trailing <code>asof:&lt;blockhash&gt;</code> argument,
+              on any negotiated protocol; see COMPAT.md.
             </p>
             <h2 id="scripthash-index">Scripthash index</h2>
             <p>
               Address and scripthash routes need <code>--sh-index</code>. Without it they return
               <strong>503</strong> <code>scripthash index disabled</code>. Unpaged stats and
-              <code>/utxo</code> above <code>--max-sh-creates</code> are <strong>503</strong>; paged
-              history is still served.
+              <code>/utxo</code> above <code>--max-sh-creates</code> are <strong>503</strong>; a
+              short paged history request is still served, while a full newest-first page reads
+              every create and takes the cap. On the unix socket,
+              <code>/internal/address/{address}</code> and
+              <code>/internal/scripthash/{scripthash}</code> answer those stats without the
+              <code>--max-sh-creates</code> 503.
             </p>
             <h2 id="errors">Errors</h2>
             <p>
@@ -206,7 +225,7 @@
             <p>
               Generated from
               <a
-                href="https://github.com/rbitcoin-org/rbitcoin/blob/9eabc083eab65c8fb0c651f5fad4a5195b9aa5fc/docs/esplora-openapi.yaml"
+                href="https://github.com/rbitcoin-org/rbitcoin/blob/be1a7a8892f2d86dca370713aa5dd8868c2b316d/docs/esplora-openapi.yaml"
                 ><code>docs/esplora-openapi.yaml</code></a
               >. <a href="openapi.yaml">Download the OpenAPI file</a>.
             </p>
@@ -243,7 +262,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -282,7 +308,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -422,7 +455,12 @@
                     >#</a
                   >
                 </h3>
-                <p>Block summary (best chain only)</p>
+                <p>Block summary (active or disconnected by this process)</p>
+                <p>
+                  Height resolution walks at most 10,000 headers to an active ancestor or genesis;
+                  beyond that, 404. Median time uses this branch. Stale summaries require complete
+                  txstat rows; unstamped stale summaries are 404 without witness reconstruction.
+                </p>
                 <table class="api-rows">
                   <caption>
                     Parameters
@@ -472,6 +510,7 @@
                   >
                 </h3>
                 <p>80-byte block header as hex</p>
+                <p>Requires an active block or a body disconnected during this process.</p>
                 <table class="api-rows">
                   <caption>
                     Parameters
@@ -522,6 +561,11 @@
                   >
                 </h3>
                 <p>Whether the block is on the best chain</p>
+                <p>
+                  Blocks disconnected during this process retain their original height and have null
+                  next_best. A stored header without an archived body is 404. Height resolution is
+                  limited to 10,000 headers; beyond that, 404.
+                </p>
                 <table class="api-rows">
                   <caption>
                     Parameters
@@ -764,6 +808,62 @@
                   </tbody>
                 </table>
               </section>
+              <section class="api-operation" id="get-block-hash-txs-summary">
+                <h3>
+                  <span class="api-method">GET</span> <code>/block/{hash}/txs/summary</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-block-hash-txs-summary"
+                    aria-label="Link to GET /block/{hash}/txs/summary"
+                    >#</a
+                  >
+                </h3>
+                <p>Txid, fee, weight, and value of every tx in the block (rbitcoin dialect)</p>
+                <p>
+                  Not in Blockstream Esplora API.md. One array row per tx in block order, coinbase
+                  first (fee 0). Same 404s as <code>/txids</code>; this static segment wins over
+                  <code>/txs/{start_index}</code>. No <code>--sh-index</code>. A pruned block whose
+                  <code>txstat</code> rows predate schema 25 is 404 <code>pruned</code> on the
+                  active chain. An unstamped stale block is 404 without reconstruction.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>hash</code></th>
+                      <td>
+                        <p>Required path. <a href="#schema-hash">Hash</a></p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Rows</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p>array of <a href="#schema-blocktxsummaryrow">BlockTxSummaryRow</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>Unknown object, malformed hash, or <code>pruned</code></p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
               <section class="api-operation" id="get-block-hash-txs-start-index">
                 <h3>
                   <span class="api-method">GET</span> <code>/block/{hash}/txs/{start_index}</code
@@ -875,7 +975,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -887,6 +994,293 @@
             </section>
             <section id="tag-transactions">
               <h2>Transactions</h2>
+              <section class="api-operation" id="get-block-height-height-tx-index">
+                <h3>
+                  <span class="api-method">GET</span> <code>/block-height/{height}/tx/{index}</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-block-height-height-tx-index"
+                    aria-label="Link to GET /block-height/{height}/tx/{index}"
+                    >#</a
+                  >
+                </h3>
+                <p>Confirmed transaction JSON by block position</p>
+                <p>
+                  Same body as <code>GET /tx/{txid}</code> for that confirmed tx. A missing height
+                  or index is 404; a non-integer segment is 400. No <code>--sh-index</code>.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>height</code></th>
+                      <td>
+                        <p>Required path. integer</p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>index</code></th>
+                      <td>
+                        <p>Required path. integer</p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Transaction</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p><a href="#schema-transaction">Transaction</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>400</code></th>
+                      <td>
+                        <p>Bad input</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <section class="api-operation" id="get-block-height-height-tx-index-out-vout">
+                <h3>
+                  <span class="api-method">GET</span>
+                  <code>/block-height/{height}/tx/{index}/out/{vout}</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-block-height-height-tx-index-out-vout"
+                    aria-label="Link to GET /block-height/{height}/tx/{index}/out/{vout}"
+                    >#</a
+                  >
+                </h3>
+                <p>One confirmed output by block position</p>
+                <p>
+                  <code>spent: true</code> is still 200 with the script and value. A mempool spend
+                  stays <code>spent: false</code>. Genesis coinbase outputs, a header with no body,
+                  and a missing vout are 404. No <code>--sh-index</code>.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>height</code></th>
+                      <td>
+                        <p>Required path. integer</p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>index</code></th>
+                      <td>
+                        <p>Required path. integer</p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>vout</code></th>
+                      <td>
+                        <p>Required path. integer</p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Output</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p><a href="#schema-txout">TxOut</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>400</code></th>
+                      <td>
+                        <p>Bad input</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <section class="api-operation" id="post-block-heights-txs-outs">
+                <h3>
+                  <span class="api-method">POST</span> <code>/block-heights/txs/outs</code
+                  ><a
+                    class="api-permalink"
+                    href="#post-block-heights-txs-outs"
+                    aria-label="Link to POST /block-heights/txs/outs"
+                    >#</a
+                  >
+                </h3>
+                <p>Confirmed outputs for several block positions</p>
+                <p>
+                  Body <code>[[height, index, vout], …]</code>; one slot per element, same order,
+                  duplicates kept, JSON <code>null</code> where the GET would be 404. One bad
+                  element is 400 for the whole body. More than 300 is 422
+                  <code>body too long</code>. <code>[]</code> is 200 <code>[]</code>. No
+                  <code>--sh-index</code>.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Request body
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th>Body</th>
+                      <td>
+                        <p>Required request body.</p>
+                        <p><code>application/json</code></p>
+                        <p>array of array of integer (at least 3, at most 3) (at most 300)</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>One output or null per element</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p>array of <a href="#schema-txout">TxOut</a> or null</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>400</code></th>
+                      <td>
+                        <p>Bad input</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>413</code></th>
+                      <td>
+                        <p>Body too large</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>422</code></th>
+                      <td>
+                        <p>More than 300 elements (<code>body too long</code>)</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
               <section class="api-operation" id="get-tx-txid">
                 <h3>
                   <span class="api-method">GET</span> <code>/tx/{txid}</code
@@ -1057,9 +1451,15 @@
                 <p>Confirmation status</p>
                 <p>
                   Live: confirmed status at the tip, or
-                  <code>{&quot;confirmed&quot;: false}</code> for a mempool tx. With
-                  <code>?asof=</code>: confirmed only if the tx is in a block at or below the as-of
-                  block; a tx confirmed later reads <code>{&quot;confirmed&quot;: false}</code>.
+                  <code>{&quot;confirmed&quot;: false}</code> for a mempool tx and for a txid that
+                  is neither stored nor in the mempool, as electrs answers (the other
+                  <code>/tx/{txid}</code> routes are 404 for that txid). A stored tx that is in
+                  neither (reorged out and not back in the mempool) is <strong>404</strong>, or
+                  <strong>503</strong> <code>chain view moved</code> while a connect, disconnect or
+                  reorg holds the pool. With <code>?asof=</code>: confirmed only if the tx is in a
+                  block at or below the as-of block; a tx confirmed later reads
+                  <code>{&quot;confirmed&quot;: false}</code>, and a txid that is not stored is
+                  <strong>404</strong>.
                 </p>
                 <table class="api-rows">
                   <caption>
@@ -1118,7 +1518,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -1372,6 +1779,83 @@
                   </tbody>
                 </table>
               </section>
+              <section class="api-operation" id="get-tx-txid-out-vout">
+                <h3>
+                  <span class="api-method">GET</span> <code>/tx/{txid}/out/{vout}</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-tx-txid-out-vout"
+                    aria-label="Link to GET /tx/{txid}/out/{vout}"
+                    >#</a
+                  >
+                </h3>
+                <p>One confirmed output by txid</p>
+                <p>
+                  Same body as <code>/block-height/{height}/tx/{index}/out/{vout}</code>. A
+                  mempool-only tx is 404.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>txid</code></th>
+                      <td>
+                        <p>Required path. <a href="#schema-hash">Hash</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>vout</code></th>
+                      <td>
+                        <p>Required path. integer</p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Output</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p><a href="#schema-txout">TxOut</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
               <section class="api-operation" id="get-txs-outspends">
                 <h3>
                   <span class="api-method">GET</span> <code>/txs/outspends</code
@@ -1395,6 +1879,8 @@
                         <p>
                           Comma-separated txids, at most 50. A missing list or more than 50 ids is
                           400. A token that is not a hash is an empty array for that slot, not 400.
+                          The output counts of every listed txid (repeats included) may sum to at
+                          most 250,000; over that is 400 <code>Too many outputs requested</code>.
                         </p>
                       </td>
                     </tr>
@@ -1503,7 +1989,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -1536,8 +2029,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -1586,7 +2082,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -1670,7 +2173,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -1699,8 +2209,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -1749,7 +2262,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -1856,7 +2376,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -1888,8 +2415,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -1963,7 +2493,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2041,7 +2578,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2144,7 +2688,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2172,8 +2723,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -2222,7 +2776,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2258,8 +2819,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -2327,7 +2891,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2392,7 +2963,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2426,8 +3004,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                   </tbody>
@@ -2458,7 +3039,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2481,7 +3069,8 @@
                 <p>
                   Not in Blockstream Esplora API.md; shaped like mempool.space
                   <code>/address/:addr/txs/summary</code>. Confirmed only, 25 per page, newest
-                  first. Served above <code>--max-sh-creates</code>.
+                  first. A short page is served above <code>--max-sh-creates</code>; a full page
+                  reads every create and takes the cap.
                 </p>
                 <table class="api-rows">
                   <caption>
@@ -2566,7 +3155,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2668,7 +3264,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2697,8 +3300,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -2772,7 +3378,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2808,8 +3421,11 @@
                     <tr>
                       <th><code>scripthash</code></th>
                       <td>
-                        <p>Required path. <a href="#schema-hash">Hash</a></p>
-                        <p>Electrum scripthash (SHA256 of the scriptPubKey, byte-reversed hex)</p>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -2877,7 +3493,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -2993,7 +3616,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3105,7 +3735,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3163,8 +3800,12 @@
                       <th>Body</th>
                       <td>
                         <p>Required request body.</p>
+                        <p>
+                          Scripthashes in the same form as the <code>scripthash</code> path
+                          parameter (digest order).
+                        </p>
                         <p><code>application/json</code></p>
-                        <p>array of <a href="#schema-hash">Hash</a> (at most 300)</p>
+                        <p>array of <a href="#schema-scripthash">Scripthash</a> (at most 300)</p>
                       </td>
                     </tr>
                   </tbody>
@@ -3217,7 +3858,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3275,8 +3923,12 @@
                       <th>Body</th>
                       <td>
                         <p>Required request body.</p>
+                        <p>
+                          Scripthashes in the same form as the <code>scripthash</code> path
+                          parameter (digest order).
+                        </p>
                         <p><code>application/json</code></p>
-                        <p>array of <a href="#schema-hash">Hash</a> (at most 300)</p>
+                        <p>array of <a href="#schema-scripthash">Scripthash</a> (at most 300)</p>
                       </td>
                     </tr>
                   </tbody>
@@ -3329,7 +3981,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3559,6 +4218,59 @@
                   </tbody>
                 </table>
               </section>
+              <section class="api-operation" id="get-mempool-removed">
+                <h3>
+                  <span class="api-method">GET</span> <code>/mempool/removed</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-mempool-removed"
+                    aria-label="Link to GET /mempool/removed"
+                    >#</a
+                  >
+                </h3>
+                <p>Recent committed mempool removals with their reason (rbitcoin dialect)</p>
+                <p>
+                  Not in Blockstream Esplora API.md. The removals the pool still holds, oldest
+                  first. <code>seq</code> is the RPC <code>getrawmempool false true</code>
+                  <code>mempool_sequence</code> that removal took. Every removal numbered
+                  <code>oldest</code> or later is in <code>removed</code>. At most 16,666 rows; past
+                  that the oldest drops. An admit the node takes back writes no row. A
+                  <code>replaced</code> row whose replacement did not stay is dropped once the
+                  replaced transaction is back in the pool. Without a mempool the answer is
+                  <code>{&quot;oldest&quot;: 1, &quot;removed&quot;: []}</code>.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Removal rows</p>
+                        <p><code>application/json</code></p>
+                        <p><a href="#schema-mempoolremoved">MempoolRemoved</a></p>
+                        <pre><code>{
+  &quot;oldest&quot;: 1180,
+  &quot;removed&quot;: [
+    {
+      &quot;seq&quot;: 1202,
+      &quot;txid&quot;: &quot;aa00000000000000000000000000000000000000000000000000000000000000&quot;,
+      &quot;reason&quot;: &quot;replaced&quot;,
+      &quot;by&quot;: &quot;bb00000000000000000000000000000000000000000000000000000000000000&quot;
+    },
+    {
+      &quot;seq&quot;: 1203,
+      &quot;txid&quot;: &quot;cc00000000000000000000000000000000000000000000000000000000000000&quot;,
+      &quot;reason&quot;: &quot;block&quot;
+    }
+  ]
+}</code></pre>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
               <section class="api-operation" id="get-fee-estimates">
                 <h3>
                   <span class="api-method">GET</span> <code>/fee-estimates</code
@@ -3597,7 +4309,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3665,7 +4384,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3686,10 +4412,11 @@
                 </h3>
                 <p>Test mempool acceptance without admitting</p>
                 <p>
-                  One result per transaction. If the batch contains a duplicate txid, the body is a
-                  single object with <code>allowed: false</code> and
-                  <code>package-error: package-contains-duplicates</code> (no
-                  <code>reject-reason</code>).
+                  One result per transaction, in request order. Two or more transactions are tested
+                  as a package, as bitcoind <code>testmempoolaccept</code> does for mempool/electrs,
+                  so a child may spend a parent from the same request. Nothing is admitted. A
+                  package-wide failure gives every row <code>package-error</code> and no
+                  <code>allowed</code>.
                 </p>
                 <table class="api-rows">
                   <caption>
@@ -3716,7 +4443,7 @@
                       <td>
                         <p>Required request body.</p>
                         <p><code>application/json</code></p>
-                        <p>array of string (at most 25)</p>
+                        <p>array of string (at least 1, at most 25)</p>
                       </td>
                     </tr>
                   </tbody>
@@ -3729,9 +4456,7 @@
                     <tr>
                       <th><code>200</code></th>
                       <td>
-                        <p>
-                          One result per transaction, or one object when the batch repeats a txid
-                        </p>
+                        <p>One result per transaction</p>
                         <p>Sends the chain-tip headers.</p>
                         <p><code>application/json</code></p>
                         <p>array of <a href="#schema-testacceptresult">TestAcceptResult</a></p>
@@ -3758,7 +4483,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -3777,7 +4509,10 @@
                     >#</a
                   >
                 </h3>
-                <p>Submit a package (same path as RPC <code>submitpackage</code>)</p>
+                <p>
+                  Submit a package (atomic <code>accept_package</code>, not the RPC
+                  <code>submitpackage</code> path)
+                </p>
                 <table class="api-rows">
                   <caption>
                     Request body
@@ -3838,7 +4573,14 @@
                       <td>
                         <p>
                           No tip, mempool unavailable, scripthash index disabled,
-                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
                         </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
@@ -4150,6 +4892,11 @@
                   >
                 </h3>
                 <p>Outspends per txid (unknown txid → <code>[]</code>)</p>
+                <p>
+                  At most 1,000 txids (more is 400 <code>Too many txids requested</code>). The
+                  output counts of every listed txid (repeats included) may sum to at most 250,000;
+                  over that is 400 <code>Too many outputs requested</code>.
+                </p>
                 <table class="api-rows">
                   <caption>
                     Request body
@@ -4245,6 +4992,398 @@
                   </tbody>
                 </table>
               </section>
+              <section class="api-operation" id="get-internal-address-address">
+                <h3>
+                  <span class="api-method">GET</span> <code>/internal/address/{address}</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-internal-address-address"
+                    aria-label="Link to GET /internal/address/{address}"
+                    >#</a
+                  >
+                </h3>
+                <p><code>/address/{address}</code> stats without <code>--max-sh-creates</code></p>
+                <p>
+                  Same body, <code>?asof=</code>, and chain-tip headers as
+                  <code>/address/{address}</code>, but a script above
+                  <code>--max-sh-creates</code> is answered instead of 503.
+                  <code>--heavy-sh-creates</code> still applies. The public routes keep the cap on
+                  this socket too. Probe: <code>/internal/scripthash/</code> followed by 64 zeros is
+                  200 with zero counters here and 404 on a node without the route.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>address</code></th>
+                      <td>
+                        <p>Required path. string</p>
+                        <p>Address on the node&#x27;s network</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Stats</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p><a href="#schema-addressinfo">AddressInfo</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <section class="api-operation" id="get-internal-scripthash-scripthash">
+                <h3>
+                  <span class="api-method">GET</span> <code>/internal/scripthash/{scripthash}</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-internal-scripthash-scripthash"
+                    aria-label="Link to GET /internal/scripthash/{scripthash}"
+                    >#</a
+                  >
+                </h3>
+                <p>
+                  <code>/scripthash/{scripthash}</code> stats without <code>--max-sh-creates</code>
+                </p>
+                <p>See <code>/internal/address/{address}</code>.</p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>scripthash</code></th>
+                      <td>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Stats</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p><a href="#schema-addressinfo">AddressInfo</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <section class="api-operation" id="get-internal-scripthash-scripthash-history">
+                <h3>
+                  <span class="api-method">GET</span>
+                  <code>/internal/scripthash/{scripthash}/history</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-internal-scripthash-scripthash-history"
+                    aria-label="Link to GET /internal/scripthash/{scripthash}/history"
+                    >#</a
+                  >
+                </h3>
+                <p>
+                  Every confirmed transaction of the script, without <code>--max-sh-creates</code>
+                </p>
+                <p>
+                  Electrum <code>blockchain.scripthash.get_history</code> rows for the confirmed
+                  chain as of the pinned view, in its order: height ascending, then txid bytes
+                  (internal byte order, the reverse of the hex). One row per confirmed instance: a
+                  BIP30 duplicate coinbase (one txid in two blocks) is listed at both heights, where
+                  <code>get_history</code> keeps only the first. No mempool rows.
+                  <code>?asof=</code> and the chain-tip headers are those of
+                  <code>/internal/scripthash/{scripthash}</code>, and the row count equals its
+                  <code>chain_stats.tx_count</code> at the same pin. The body is chunked and written
+                  one wave of creates at a time, each wave under the
+                  <code>--heavy-sh-creates</code> turn. If the pinned block leaves the best chain, a
+                  read fails, or the reader leaves a chunk unread for the idle timeout, the body is
+                  aborted without its final chunk or <code>]</code>. Unix socket only; TCP is 404.
+                  Probe: 64 zeros as the scripthash is 200 <code>[]</code> here and 404 on a node
+                  without the route.
+                </p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>scripthash</code></th>
+                      <td>
+                        <p>Required path. <a href="#schema-scripthash">Scripthash</a></p>
+                        <p>
+                          SHA256 of the scriptPubKey, hex in digest order, as electrs reads it. Not
+                          reversed like an Electrum scripthash.
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>Confirmed history, oldest first</p>
+                        <p>Sends the chain-tip headers.</p>
+                        <p><code>application/json</code></p>
+                        <p>array of object</p>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <th><code>tx_hash</code></th>
+                              <td>
+                                <a href="#schema-hash">Hash</a>
+                                <p>Required.</p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <th><code>height</code></th>
+                              <td>
+                                integer
+                                <p>Required.</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <section class="api-operation" id="get-internal-address-address-history">
+                <h3>
+                  <span class="api-method">GET</span>
+                  <code>/internal/address/{address}/history</code
+                  ><a
+                    class="api-permalink"
+                    href="#get-internal-address-address-history"
+                    aria-label="Link to GET /internal/address/{address}/history"
+                    >#</a
+                  >
+                </h3>
+                <p><code>/internal/scripthash/{scripthash}/history</code> for an address</p>
+                <table class="api-rows">
+                  <caption>
+                    Parameters
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>address</code></th>
+                      <td>
+                        <p>Required path. string</p>
+                        <p>Address on the node&#x27;s network</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>asof</code></th>
+                      <td>
+                        <p>Optional query. <a href="#schema-hash">Hash</a></p>
+                        <p>
+                          Block hash (display order) on the current best chain. Pins the answer at
+                          that block: no later confirmations and no mempool. Bad hex, an empty
+                          value, an unknown or reorged-out block, or (address/scripthash routes) a
+                          block ahead of the visible scripthash index → <strong>404</strong>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="api-rows">
+                  <caption>
+                    Responses
+                  </caption>
+                  <tbody>
+                    <tr>
+                      <th><code>200</code></th>
+                      <td>
+                        <p>See <code>/internal/scripthash/{scripthash}/history</code></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>404</code></th>
+                      <td>
+                        <p>
+                          Malformed address, wrong network, bad hex, or an <code>asof</code> block
+                          that is unknown, off the best chain, or ahead of the scripthash index. A
+                          valid address or scripthash with no history is 200 (zero stats, or an
+                          empty array), not 404.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
             </section>
             <section id="schemas">
               <h2>Schemas</h2>
@@ -4254,6 +5393,14 @@
                 <p>
                   Display-order hex. Uppercase and an optional <code>0x</code> /
                   <code>0X</code> prefix are accepted.
+                </p>
+                <p>pattern <code>^(?:0[xX])?[0-9a-fA-F]{64}$</code>.</p>
+              </section>
+              <section id="schema-scripthash">
+                <h3><code>Scripthash</code></h3>
+                <p>
+                  SHA256 of the scriptPubKey, hex in digest order (not reversed). Uppercase and an
+                  optional <code>0x</code> / <code>0X</code> prefix are accepted.
                 </p>
                 <p>pattern <code>^(?:0[xX])?[0-9a-fA-F]{64}$</code>.</p>
               </section>
@@ -4372,7 +5519,7 @@
                     <tr>
                       <th><code>height</code></th>
                       <td>
-                        integer or null
+                        integer
                         <p>Required.</p>
                       </td>
                     </tr>
@@ -4456,6 +5603,10 @@
                     </tr>
                   </tbody>
                 </table>
+              </section>
+              <section id="schema-txout">
+                <h3><code>TxOut</code></h3>
+                <p>One confirmed output. <code>status</code> is the creating transaction&#x27;s.</p>
               </section>
               <section id="schema-vin">
                 <h3><code>Vin</code></h3>
@@ -4740,7 +5891,7 @@
                     </tr>
                     <tr>
                       <th><code>scripthash</code></th>
-                      <td><a href="#schema-hash">Hash</a></td>
+                      <td><a href="#schema-scripthash">Scripthash</a></td>
                     </tr>
                     <tr>
                       <th><code>chain_stats</code></th>
@@ -4803,6 +5954,79 @@
                   </tbody>
                 </table>
               </section>
+              <section id="schema-blocktxsummaryrow">
+                <h3><code>BlockTxSummaryRow</code></h3>
+                <p>
+                  <code>[txid, fee, weight, value]</code>: fee in sats (coinbase 0), BIP141 weight
+                  units (not sigop-adjusted), sum of the tx&#x27;s output values in sats.
+                </p>
+              </section>
+              <section id="schema-mempoolremoved">
+                <h3><code>MempoolRemoved</code></h3>
+                <table>
+                  <tbody>
+                    <tr>
+                      <th><code>oldest</code></th>
+                      <td>
+                        integer
+                        <p>Required.</p>
+                        <p>Lowest sequence the list still covers</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>removed</code></th>
+                      <td>
+                        array of <a href="#schema-mempoolremovedrow">MempoolRemovedRow</a>
+                        <p>Required.</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <section id="schema-mempoolremovedrow">
+                <h3><code>MempoolRemovedRow</code></h3>
+                <table>
+                  <tbody>
+                    <tr>
+                      <th><code>seq</code></th>
+                      <td>
+                        integer
+                        <p>Required.</p>
+                        <p>The <code>mempool_sequence</code> this removal took</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>txid</code></th>
+                      <td>
+                        <a href="#schema-hash">Hash</a>
+                        <p>Required.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>reason</code></th>
+                      <td>
+                        string
+                        <p>Required.</p>
+                        <p>Core <code>MemPoolRemovalReason</code></p>
+                        <p>
+                          one of <code>expiry</code>, <code>sizelimit</code>, <code>reorg</code>,
+                          <code>block</code>, <code>conflict</code>, <code>replaced</code>.
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>by</code></th>
+                      <td>
+                        value
+                        <p>
+                          The replacing txid. Present only when <code>reason</code> is
+                          <code>replaced</code>.
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
               <section id="schema-mempoolinfo">
                 <h3><code>MempoolInfo</code></h3>
                 <table>
@@ -4860,7 +6084,7 @@
                       <th><code>allowed</code></th>
                       <td>
                         boolean
-                        <p>Required.</p>
+                        <p>Absent when <code>package-error</code> is set.</p>
                       </td>
                     </tr>
                     <tr>
@@ -4868,8 +6092,9 @@
                       <td>
                         integer
                         <p>
-                          Present when <code>allowed</code> is true. <code>floor(weight / 4)</code>,
-                          not the ceiling Core uses.
+                          Present when <code>allowed</code> is true. The sigop-adjusted admission
+                          weight divided by 4, rounded up, as <code>testmempoolaccept</code> reports
+                          it.
                         </p>
                       </td>
                     </tr>
@@ -4887,6 +6112,20 @@
                                 <p>BTC</p>
                               </td>
                             </tr>
+                            <tr>
+                              <th><code>effective-feerate</code></th>
+                              <td>
+                                number
+                                <p>BTC/kvB</p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <th><code>effective-includes</code></th>
+                              <td>
+                                array of <a href="#schema-hash">Hash</a>
+                                <p>This transaction&#x27;s wtxid</p>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </td>
@@ -4896,8 +6135,8 @@
                       <td>
                         string
                         <p>
-                          Policy or fee failure, including <code>max-fee-exceeded</code>. Absent
-                          when <code>package-error</code> is set.
+                          Core reject reason, including <code>max-fee-exceeded</code>. Present when
+                          <code>allowed</code> is false.
                         </p>
                       </td>
                     </tr>
@@ -4906,9 +6145,10 @@
                       <td>
                         string
                         <p>
-                          Set to <code>package-contains-duplicates</code> when the batch repeats a
-                          txid. That response is one object, not one per transaction, and has no
-                          <code>reject-reason</code>.
+                          A failure of the whole package, such as
+                          <code>package-contains-duplicates</code>,
+                          <code>conflict-in-package</code>, or <code>package-not-sorted</code>.
+                          Every row carries it.
                         </p>
                       </td>
                     </tr>
