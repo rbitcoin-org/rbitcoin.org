@@ -178,6 +178,11 @@
             separate Electrum indexer.
           </p>
           <p>The store uses ordinary files; you do not need to install a database server.</p>
+          <p>
+            From 0.10, the node syncs a block’s archive writes to disk before it records the new
+            tip. Each spend is kept as its own record until a background step folds it in. After a
+            power cut, the node keeps what it had committed and downloads the rest again.
+          </p>
         </section>
         <section id="storage">
           <h2>Keep the working data fast.</h2>
