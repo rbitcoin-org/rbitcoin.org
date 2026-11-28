@@ -71,8 +71,8 @@
           </p>
           <p class="annotation">
             Describes rbitcoin 0.9.99 (<a
-              href="https://github.com/rbitcoin-org/rbitcoin/commit/be1a7a8892f2d86dca370713aa5dd8868c2b316d"
-              ><code>be1a7a889</code></a
+              href="https://github.com/rbitcoin-org/rbitcoin/commit/ebc6e6787c9f790366d5d6e5a292ff718e6bbc8d"
+              ><code>ebc6e6787</code></a
             >).
           </p>
         </header>
@@ -225,7 +225,7 @@
             <p>
               Generated from
               <a
-                href="https://github.com/rbitcoin-org/rbitcoin/blob/be1a7a8892f2d86dca370713aa5dd8868c2b316d/docs/esplora-openapi.yaml"
+                href="https://github.com/rbitcoin-org/rbitcoin/blob/ebc6e6787c9f790366d5d6e5a292ff718e6bbc8d/docs/esplora-openapi.yaml"
                 ><code>docs/esplora-openapi.yaml</code></a
               >. <a href="openapi.yaml">Download the OpenAPI file</a>.
             </p>
@@ -1451,15 +1451,15 @@
                 <p>Confirmation status</p>
                 <p>
                   Live: confirmed status at the tip, or
-                  <code>{&quot;confirmed&quot;: false}</code> for a mempool tx and for a txid that
-                  is neither stored nor in the mempool, as electrs answers (the other
-                  <code>/tx/{txid}</code> routes are 404 for that txid). A stored tx that is in
-                  neither (reorged out and not back in the mempool) is <strong>404</strong>, or
-                  <strong>503</strong> <code>chain view moved</code> while a connect, disconnect or
-                  reorg holds the pool. With <code>?asof=</code>: confirmed only if the tx is in a
-                  block at or below the as-of block; a tx confirmed later reads
-                  <code>{&quot;confirmed&quot;: false}</code>, and a txid that is not stored is
-                  <strong>404</strong>.
+                  <code>{&quot;confirmed&quot;: false}</code> for a mempool tx, for a txid that is
+                  neither stored nor in the mempool, and for a stored tx reorged out and not back in
+                  the mempool, as electrs answers (the other <code>/tx/{txid}</code> routes are 404
+                  for those txids). A reorged-out tx is <strong>503</strong>
+                  <code>chain view moved</code> instead while a connect, disconnect or reorg holds
+                  the pool longer than the 5 s a request waits for it to end. With
+                  <code>?asof=</code>: confirmed only if the tx is in a block at or below the as-of
+                  block; a tx confirmed later reads <code>{&quot;confirmed&quot;: false}</code>, and
+                  a txid that is not stored is <strong>404</strong>.
                 </p>
                 <table class="api-rows">
                   <caption>
@@ -1723,6 +1723,9 @@
                 <p>Spend status of every output</p>
                 <p>
                   Same <code>?asof=</code> semantics as <code>/tx/{txid}/outspend/{vout}</code>.
+                  Without <code>start_index</code>, every output, as Esplora answers. A reply over
+                  10,000 entries waits for the node&#x27;s single heavy turn, so one such reply is
+                  built at a time.
                 </p>
                 <table class="api-rows">
                   <caption>
@@ -1747,6 +1750,19 @@
                         </p>
                       </td>
                     </tr>
+                    <tr>
+                      <th><code>start_index</code></th>
+                      <td>
+                        <p>Optional query. integer</p>
+                        <p>
+                          Dialect. First vout of the page; the page is vouts
+                          <code>start_index</code> up to <code>start_index + 10000</code>, built
+                          without the heavy turn. Past the last output is 404 (0 on a tx with no
+                          outputs is <code>[]</code>). A non-integer is 400.
+                        </p>
+                        <p>minimum 0.</p>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
                 <table class="api-rows">
@@ -1757,10 +1773,21 @@
                     <tr>
                       <th><code>200</code></th>
                       <td>
-                        <p>One entry per output, in vout order</p>
+                        <p>
+                          One entry per output (per output in the page with
+                          <code>start_index</code>), in vout order
+                        </p>
                         <p>Sends the chain-tip headers.</p>
                         <p><code>application/json</code></p>
                         <p>array of <a href="#schema-outspend">Outspend</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>400</code></th>
+                      <td>
+                        <p>Bad input</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
                       </td>
                     </tr>
                     <tr>
@@ -1904,6 +1931,35 @@
                       <th><code>400</code></th>
                       <td>
                         <p>Bad input</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>500</code></th>
+                      <td>
+                        <p>
+                          A store read failed. The request was not answered from partial data;
+                          retry, and check the node log if it persists.
+                        </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
                       </td>
@@ -4334,6 +4390,17 @@
                   ><a class="api-permalink" href="#post-tx" aria-label="Link to POST /tx">#</a>
                 </h3>
                 <p>Broadcast a raw transaction</p>
+                <p>
+                  A refused tx is <strong>400</strong> with Esplora&#x27;s body for Core&#x27;s
+                  <code>sendrawtransaction</code> error:
+                  <code>sendrawtransaction RPC error: </code> and
+                  <code
+                    >{&quot;code&quot;:&lt;code&gt;,&quot;message&quot;:&quot;&lt;reason&gt;&quot;}</code
+                  >, the code and reason <code>sendrawtransaction</code> gives (<code
+                    >-26 min relay fee not met</code
+                  >, <code>-25 bad-txns-inputs-missingorspent</code>,
+                  <code>-27 Transaction outputs already in utxo set</code>).
+                </p>
                 <table class="api-rows">
                   <caption>
                     Request body
@@ -4934,6 +5001,35 @@
                         <p>string</p>
                       </td>
                     </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>500</code></th>
+                      <td>
+                        <p>
+                          A store read failed. The request was not answered from partial data;
+                          retry, and check the node log if it persists.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </section>
@@ -4985,6 +5081,35 @@
                       <th><code>400</code></th>
                       <td>
                         <p>Bad input</p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>503</code></th>
+                      <td>
+                        <p>
+                          No tip, mempool unavailable, scripthash index disabled,
+                          <code>--max-sh-creates</code> exceeded, or <code>chain view moved</code>.
+                          Address and scripthash routes also answer
+                          <code>scripthash index rebuilding</code> while the index is rebuilt after
+                          a fault (every script, until the replacement is published) and
+                          <code>scripthash index updating</code> while a reorg&#x27;s disconnect
+                          rewrites it (once per disconnected block, briefly, and for a request that
+                          was already running when it began). Both mean retry; neither is a reason
+                          to rescan.
+                        </p>
+                        <p><code>text/plain</code></p>
+                        <p>string</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><code>500</code></th>
+                      <td>
+                        <p>
+                          A store read failed. The request was not answered from partial data;
+                          retry, and check the node log if it persists.
+                        </p>
                         <p><code>text/plain</code></p>
                         <p>string</p>
                       </td>

@@ -388,11 +388,12 @@ paths:
       tags: [transactions]
       summary: Confirmation status
       description: |
-        Live: confirmed status at the tip, or `{"confirmed": false}` for a mempool tx
-        and for a txid that is neither stored nor in the mempool, as electrs answers
-        (the other `/tx/{txid}` routes are 404 for that txid).
-        A stored tx that is in neither (reorged out and not back in the mempool) is **404**,
-        or **503** `chain view moved` while a connect, disconnect or reorg holds the pool.
+        Live: confirmed status at the tip, or `{"confirmed": false}` for a mempool tx,
+        for a txid that is neither stored nor in the mempool, and for a stored tx
+        reorged out and not back in the mempool, as electrs answers (the other
+        `/tx/{txid}` routes are 404 for those txids). A reorged-out tx is **503**
+        `chain view moved` instead while a connect, disconnect or reorg holds the pool
+        longer than the 5 s a request waits for it to end.
         With `?asof=`: confirmed only if the tx is in a block at or below the
         as-of block; a tx confirmed later reads `{"confirmed": false}`, and a txid
         that is not stored is **404**.
@@ -452,17 +453,30 @@ paths:
     get:
       tags: [transactions]
       summary: Spend status of every output
-      description: Same `?asof=` semantics as `/tx/{txid}/outspend/{vout}`.
+      description: |
+        Same `?asof=` semantics as `/tx/{txid}/outspend/{vout}`. Without
+        `start_index`, every output, as Esplora answers. A reply over 10,000
+        entries waits for the node's single heavy turn, so one such reply is
+        built at a time.
       parameters:
         - { $ref: "#/components/parameters/Txid" }
         - { $ref: "#/components/parameters/AsOf" }
+        - name: start_index
+          in: query
+          required: false
+          description: |
+            Dialect. First vout of the page; the page is vouts `start_index` up to
+            `start_index + 10000`, built without the heavy turn. Past the last output is 404 (0 on a tx with no
+            outputs is `[]`). A non-integer is 400.
+          schema: { type: integer, minimum: 0 }
       responses:
         "200":
-          description: One entry per output, in vout order
+          description: One entry per output (per output in the page with `start_index`), in vout order
           headers: { X-Bitcoin-Chain-Tip: { $ref: "#/components/headers/ChainTip" }, X-Bitcoin-Chain-Tip-Height: { $ref: "#/components/headers/ChainTipHeight" }, X-Powered-By: { $ref: "#/components/headers/PoweredBy" } }
           content:
             application/json:
               schema: { type: array, items: { $ref: "#/components/schemas/Outspend" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
         "404": { $ref: "#/components/responses/AsOfNotFound" }
   /tx/{txid}/out/{vout}:
     get:
@@ -505,6 +519,8 @@ paths:
                 type: array
                 items: { type: array, items: { $ref: "#/components/schemas/Outspend" } }
         "400": { $ref: "#/components/responses/BadRequest" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+        "500": { $ref: "#/components/responses/StoreError" }
 
   /address/{address}:
     get:
@@ -892,6 +908,13 @@ paths:
     post:
       tags: [broadcast]
       summary: Broadcast a raw transaction
+      description: |
+        A refused tx is **400** with Esplora's body for Core's
+        `sendrawtransaction` error: `sendrawtransaction RPC error: ` and
+        `{"code":<code>,"message":"<reason>"}`, the code and reason
+        `sendrawtransaction` gives (`-26 min relay fee not met`,
+        `-25 bad-txns-inputs-missingorspent`,
+        `-27 Transaction outputs already in utxo set`).
       requestBody:
         required: true
         content:
@@ -1021,6 +1044,8 @@ paths:
                 type: array
                 items: { type: array, items: { $ref: "#/components/schemas/Outspend" } }
         "400": { $ref: "#/components/responses/BadRequest" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+        "500": { $ref: "#/components/responses/StoreError" }
   /internal/txs/outspends/by-outpoint:
     post:
       tags: [internal]
@@ -1038,6 +1063,8 @@ paths:
             application/json:
               schema: { type: array, items: { $ref: "#/components/schemas/Outspend" } }
         "400": { $ref: "#/components/responses/BadRequest" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+        "500": { $ref: "#/components/responses/StoreError" }
   /internal/address/{address}:
     get:
       tags: [internal]
@@ -1241,6 +1268,10 @@ components:
       description: |
         No tip, mempool unavailable, scripthash index disabled, `--max-sh-creates` exceeded, or `chain view moved`.
         Address and scripthash routes also answer `scripthash index rebuilding` while the index is rebuilt after a fault (every script, until the replacement is published) and `scripthash index updating` while a reorg's disconnect rewrites it (once per disconnected block, briefly, and for a request that was already running when it began). Both mean retry; neither is a reason to rescan.
+      headers: { X-Powered-By: { $ref: "#/components/headers/PoweredBy" } }
+      content: { text/plain: { schema: { type: string } } }
+    StoreError:
+      description: A store read failed. The request was not answered from partial data; retry, and check the node log if it persists.
       headers: { X-Powered-By: { $ref: "#/components/headers/PoweredBy" } }
       content: { text/plain: { schema: { type: string } } }
     TxList:
