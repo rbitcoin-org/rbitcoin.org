@@ -95,7 +95,8 @@
                 Blockstream electrs HTTP backend. Queries use an exact address, scripthash,
                 transaction, or block id. It is an API, not a bundled graphical block explorer. The
                 <a href="../esplora/index.html">Esplora API</a> page lists the routes and response
-                shapes.
+                shapes. Dialect routes add a per-block transaction summary and the reason a
+                transaction left the mempool.
               </dd>
             </div>
             <div>
@@ -104,6 +105,14 @@
                 Chain, mempool, raw-transaction and decode methods, fee estimates, a block-template
                 selector, and an optional Stratum v2 template provider. A subset of the Bitcoin Core
                 interface.
+              </dd>
+            </div>
+            <div>
+              <dt>Local P2P</dt>
+              <dd>
+                From 0.10, a loopback listener can accept plain v1 P2P connections for a local
+                wallet indexer such as NBXplorer or bitcoinj. All other connections stay BIP324 v2
+                only.
               </dd>
             </div>
           </dl>
@@ -178,10 +187,12 @@
           <h2>Silent payments</h2>
           <p>
             rbitcoin serves silent payment tweaks over Electrum and supports Frigate scan-key
-            subscriptions. Those tweaks can run beside the 288-block witness window when the index
-            covers every height that window will drop. A scan that cannot read a height returns an
-            error. Your wallet must support the matching protocol; ordinary Electrum support is not
-            enough. See the
+            subscriptions. From 0.10, scan-key subscriptions follow the Frigate spec, so Sparrow can
+            restore a wallet’s history. The scan starts from the wallet’s birthday, runs in the
+            background, and reports its progress. Those tweaks can run beside the 288-block witness
+            window when the index covers every height that window will drop. A scan that cannot read
+            a height returns an error. Your wallet must support the matching protocol; ordinary
+            Electrum support is not enough. See the
             <a
               data-release-doc="COMPAT.md#tweaks-stream-vs-sparrow--frigate"
               href="https://github.com/rbitcoin-org/rbitcoin/blob/master/COMPAT.md#tweaks-stream-vs-sparrow--frigate"
@@ -197,6 +208,10 @@
             Bitcoin Core cookie on TCP for clients that expect one, including an unmodified mempool
             backend. The node does not create that file, and it has no <code>--rpcuser</code>
             setting.
+          </p>
+          <p>
+            From 0.10, <code>submitpackage</code> accepts version 3 (TRUC) transactions and a
+            zero-fee parent with an anchor output, as Bitcoin Core does. Peers relay the pair.
           </p>
           <p>
             There is no wallet RPC surface or coins-database UTXO scan.

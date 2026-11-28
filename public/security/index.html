@@ -93,7 +93,8 @@
           </p>
           <p>
             Feature requests, performance questions, and non-sensitive bugs belong in
-            <a href="https://github.com/rbitcoin-org/rbitcoin/issues">ordinary GitHub issues</a>. The
+            <a href="https://github.com/rbitcoin-org/rbitcoin/issues">ordinary GitHub issues</a>.
+            The
             <a href="https://github.com/rbitcoin-org/rbitcoin/blob/master/SECURITY.md"
               >project security policy</a
             >
@@ -161,18 +162,17 @@
         </section>
         <section id="operations">
           <h2>Operating the node</h2>
-          <p>
-            Signet and regtest are a place to try a wallet.
-          </p>
+          <p>Signet and regtest are a place to try a wallet.</p>
           <p>
             Watch chain agreement, reorgs, logs, and free disk space. Read the
             <a href="https://github.com/rbitcoin-org/rbitcoin/blob/master/CHANGELOG.md"
               >release notes</a
             >
-            before upgrading. Opening a data directory from 0.7, 0.8, or 0.9.0 updates its format in
-            place. A 0.9.0 binary will not open that directory afterward. A directory from 0.6 or
+            before upgrading. Opening a data directory from 0.7, 0.8, or 0.9 updates its format in
+            place. A 0.9 binary will not open that directory afterward. A directory from 0.6 or
             earlier is refused and needs a fresh sync. Do not point an older binary at a directory
-            this release has opened.
+            this release has opened. From 0.10, an unknown key in the configuration file stops
+            startup rather than being ignored.
           </p>
           <p>
             Keep wallet and RPC listeners local unless you have configured
